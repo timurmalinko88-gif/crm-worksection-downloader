@@ -1,0 +1,201 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <h3>Параметры системы</h3>
+    <h1>Настройки загрузчика</h1>
+    <p class="muted">Конфигурация рабочих директорий, API ключей и производительности.</p>
+</div>
+
+<form method="post" action="{{ url_for('save_settings') }}" class="settings-form">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+        <div class="card" style="margin: 0;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="opacity: 0.5;">01</span> Основные
+                </h2>
+            </div>
+            
+            <div class="form-grid">
+                <label>
+                    Рабочая директория (Base Dir)
+                    <input name="base_dir" type="text" value="{{ config.base_dir }}" placeholder="C:\Download_Work" />
+                </label>
+                
+                <label>
+                    Worksection MY_COOKIE
+                    <input name="my_cookie" type="password" value="{{ config.my_cookie }}" placeholder="Paste your cookie here..." />
+                    <small style="font-size: 0.75rem; color: var(--muted); font-weight: 400;">Необходим для авторизации в системе Worksection.</small>
+                </label>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="opacity: 0.5;">02</span> Производительность
+                </h2>
+            </div>
+            
+            <div class="form-grid">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <label>
+                        Потоки (Workers)
+                        <input name="max_workers" type="number" value="{{ config.max_workers }}" min="1" max="20" />
+                    </label>
+                    <label>
+                        Таймаут (сек)
+                        <input name="request_timeout" type="number" value="{{ config.request_timeout }}" />
+                    </label>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <label>
+                        Попыток (Retries)
+                        <input name="retry_attempts" type="number" value="{{ config.retry_attempts }}" />
+                    </label>
+                    <label>
+                        Задержка (Delay)
+                        <input name="retry_delay" type="number" step="0.5" value="{{ config.retry_delay }}" />
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="opacity: 0.5;">03</span> Фильтрация
+                </h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="checkbox-group" style="display: grid; gap: 0.75rem;">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="enable_file_filtering" {% if config.enable_file_filtering %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Включить фильтрацию типов файлов</span>
+                    </label>
+                </div>
+
+                <label>
+                    Разрешенные расширения (через запятую)
+                    <input name="allowed_extensions" type="text" value="{{ config.allowed_extensions | join(', ') }}" placeholder="jpg, png, tiff" />
+                </label>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <label>
+                        Мин. размер (KB)
+                        <input name="min_file_size_kb" type="number" value="{{ config.min_file_size_kb }}" />
+                    </label>
+                    <label>
+                        Макс. размер (MB)
+                        <input name="max_file_size_mb" type="number" value="{{ config.max_file_size_mb }}" />
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="opacity: 0.5;">04</span> Уведомления и Логи
+                </h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="checkbox-group" style="display: grid; gap: 1rem;">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="enable_notifications" {% if config.enable_notifications %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Системные уведомления</span>
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="log_to_file" {% if config.log_to_file %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Записывать логи в файл</span>
+                    </label>
+                </div>
+
+                <label>
+                    Уровень логирования
+                    <select name="log_level">
+                        <option value="DEBUG" {% if config.log_level == 'DEBUG' %}selected{% endif %}>DEBUG (Подробный)</option>
+                        <option value="INFO" {% if config.log_level == 'INFO' or not config.log_level %}selected{% endif %}>INFO (Стандарт)</option>
+                        <option value="WARNING" {% if config.log_level == 'WARNING' %}selected{% endif %}>WARNING (Предупреждения)</option>
+                    </select>
+                </label>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" form="clear-logs-form" class="btn ghost btn-sm" style="flex: 1; border-color: var(--error); color: var(--error);">Очистить логи</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="position: sticky; bottom: 2rem; display: flex; justify-content: flex-end; margin-top: 3rem;">
+        <button type="submit" class="btn" style="padding: 1.25rem 3rem; box-shadow: 0 10px 30px var(--accent-glow);">
+            Сохранить все изменения
+        </button>
+    </div>
+</form>
+
+<form id="clear-logs-form" method="post" action="{{ url_for('clear_logs') }}" style="display: none;"></form>
+
+<style>
+    .settings-form { margin-bottom: 4rem; }
+    
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        padding: 0.75rem 1rem;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        transition: all var(--anim-fast);
+        flex-direction: row;
+    }
+
+    .custom-checkbox:hover {
+        background: rgba(255,255,255,0.06);
+        border-color: var(--accent);
+    }
+
+    .custom-checkbox input {
+        display: none;
+    }
+
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--card-border);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--anim-fast);
+    }
+
+    .custom-checkbox input:checked + .checkmark {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .custom-checkbox input:checked + .checkmark::after {
+        content: '✓';
+        color: white;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .label-text {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .btn-sm { padding: 0.6rem 1rem; font-size: 0.8rem; border-radius: 10px; }
+</style>
+{% endblock %}

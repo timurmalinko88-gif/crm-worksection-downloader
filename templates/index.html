@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="dashboard">
+  <div class="stat-card">
+    <div class="stat-label">Активные задачи</div>
+    <div class="stat-value {{ 'warning' if stats.active_jobs_count > 0 else '' }}">
+      {{ stats.active_jobs_count }}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Файлов скачано</div>
+    <div class="stat-value primary">{{ stats.total_files }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Общий объем</div>
+    <div class="stat-value success">{{ stats.total_gb | round(2) }} <span style="font-size: 0.4em; vertical-align: middle; opacity: 0.6;">GB</span></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Место на диске</div>
+    <div class="stat-value {{ 'warning' if stats.free_gb < 1 else '' }}">
+      {{ stats.free_gb | round(1) }} <span style="font-size: 0.4em; vertical-align: middle; opacity: 0.6;">GB</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-bento">
+  <section class="card" style="margin-top: 0;">
+    <div class="section-header">
+      <h3>Конфигурация</h3>
+      <h1>Запуск загрузки</h1>
+      <p class="muted">Введите URL задачи Worksection или вставьте список ссылок для пакетной обработки.</p>
+    </div>
+
+    {% if not cookie_ok %}
+    <div class="flash flash-error" style="margin-bottom: 2rem;">
+      <span style="font-weight: 800; margin-right: 0.5rem;">⚠️</span>
+      MY_COOKIE не задан в настройках. Загрузка временно недоступна.
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('download') }}" class="form-grid" enctype="multipart/form-data">
+      <label>
+        Одиночный URL рабочей области
+        <input name="url" type="text" placeholder="https://worksection.com/..." />
+      </label>
+
+      <label>
+        Пакетная обработка (список URL)
+        <textarea name="batch_text" rows="5" placeholder="https://...&#10;https://..."></textarea>
+      </label>
+
+      <div class="form-actions-inline">
+        <label style="flex-grow: 1;">
+          Или загрузите .txt файл
+          <input type="file" name="file" accept=".txt" />
+        </label>
+        <button type="submit" class="btn" style="height: 52px; padding: 0 2.5rem;" {% if not cookie_ok %}disabled{% endif %}>
+          <span>Начать загрузку</span>
+          <span style="font-size: 1.2rem;">→</span>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card" style="margin-top: 0;">
+    <div class="section-header">
+      <h3>Очередь</h3>
+      <h2>Последние задачи</h2>
+    </div>
+
+    {% if jobs %}
+    <div class="jobs">
+      {% for job in jobs|reverse %}
+      <a class="job" href="{{ url_for('job_status', job_id=job.id) }}">
+        <div>
+          <div class="job-title">Сессия {{ job.id }}</div>
+          <div class="job-meta">
+            Links: {{ job.urls|length }} &bull; Completed: {{ job.completed }}
+          </div>
+        </div>
+        <span class="status status-{{ job.status }}">{{ job.status | job_status_label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem 0; opacity: 0.5;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📂</div>
+      <p>Активных сессий пока нет</p>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{
+  "base_dir": "./downloads",
+  "my_cookie": "YOUR_WORKSECTION_COOKIE_HERE",
+  "max_workers": 5,
+  "request_timeout": 30,
+  "retry_attempts": 3,
+  "retry_delay": 1.0,
+  "log_to_file": true,
+  "log_level": "INFO",
+  "mime_types": {
+    "image/jpeg": ".jpg",
+    "image/tiff": ".tif",
+    "image/png": ".png",
+    "application/pdf": ".pdf",
+    "application/zip": ".zip",
+    "application/x-zip-compressed": ".zip"
+  },
+  "enable_file_filtering": true,
+  "allowed_extensions": ["jpg", "jpeg", "tif", "tiff", "png", "pdf"],
+  "min_file_size_kb": 0,
+  "max_file_size_mb": 0,
+  "enable_notifications": true,
+  "notification_sound": true,
+  "notification_toast": true,
+  "enable_batch_parallel": true,
+  "parallel_urls": 5
+}

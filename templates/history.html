@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <h3>Архив сессий</h3>
+    <h1>История загрузок</h1>
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <input type="text" id="history-search" placeholder="Поиск по названию задачи..." onkeyup="filterHistory()" style="flex-grow: 1; max-width: 400px;">
+    </div>
+</div>
+
+{% if history %}
+<div class="history-grid" id="history-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    {% for task_name, task in history.items() %}
+    {% set total_size = task.files | map(attribute='size') | sum %}
+    <div class="card history-item" data-name="{{ task_name | lower }}" style="margin: 0; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <div class="job-title" style="font-size: 1.15rem;">{{ task_name }}</div>
+                <div class="job-meta">Session ID: {{ loop.index }}</div>
+            </div>
+            <span class="status status-completed">Completed</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                <div class="stat-label" style="font-size: 0.65rem;">Файлов</div>
+                <div class="stat-value" style="font-size: 1.25rem;">{{ task.files | length }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                <div class="stat-label" style="font-size: 0.65rem;">Объем</div>
+                <div class="stat-value primary" style="font-size: 1.25rem;">{{ (total_size / 1024 / 1024) | round(1) }} <span style="font-size: 0.6em;">MB</span></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <button class="btn ghost" style="width: 100%; font-size: 0.8rem; padding: 0.6rem;" onclick="toggleFiles(this)">
+                Показать файлы ({{ task.files | length }})
+            </button>
+            <div class="file-list-container" style="display: none; margin-top: 1rem; max-height: 200px; overflow-y: auto; padding-right: 0.5rem;">
+                <ul style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: 0.8rem;">
+                    {% for file in task.files %}
+                    <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; gap: 1rem; white-space: nowrap;">
+                        <span style="overflow: hidden; text-overflow: ellipsis; opacity: 0.8;">{{ file.filename }}</span>
+                        <span class="muted">{{ (file.size / 1024) | round(1) }} KB</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 5rem 2rem;">
+    <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.3;">📂</div>
+    <h2 style="opacity: 0.6;">История пока пуста</h2>
+    <p class="muted">Выполненные задачи будут появляться здесь.</p>
+</div>
+{% endif %}
+
+<script>
+    function toggleFiles(btn) {
+        const container = btn.nextElementSibling;
+        const isHidden = container.style.display === 'none';
+        container.style.display = isHidden ? 'block' : 'none';
+        btn.innerText = isHidden ? 'Скрыть файлы' : 'Показать файлы (' + container.querySelectorAll('li').length + ')';
+        btn.classList.toggle('active', isHidden);
+    }
+
+    function filterHistory() {
+        const query = document.getElementById('history-search').value.toLowerCase();
+        const items = document.querySelectorAll('.history-item');
+        items.forEach(item => {
+            const name = item.getAttribute('data-name');
+            item.style.display = name.includes(query) ? 'block' : 'none';
+        });
+    }
+</script>
+
+<style>
+    .btn.ghost {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--card-border);
+        color: var(--text);
+    }
+    .btn.ghost:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: var(--accent);
+    }
+    .btn.ghost.active {
+        background: var(--accent-glow);
+        border-color: var(--accent);
+    }
+</style>
+{% endblock %}

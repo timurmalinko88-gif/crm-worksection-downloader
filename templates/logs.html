@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <h3>Системная диагностика</h3>
+    <h1>Журналы событий</h1>
+    <p class="muted">Файлы логов загрузчика для отладки и мониторинга.</p>
+</div>
+
+{% if logs %}
+<section class="card" style="padding: 0; overflow: hidden; border-radius: 20px;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Файл</th>
+                <th>Размер</th>
+                <th>Изменен</th>
+                <th style="text-align: right;">Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.2rem; filter: grayscale(1);">📄</span>
+                        <span style="font-weight: 600; font-family: var(--font-display);">{{ log.name }}</span>
+                    </div>
+                </td>
+                <td style="font-family: var(--font-mono); font-size: 0.85rem; opacity: 0.7;">
+                    {{ (log.size / 1024) | round(1) }} KB
+                </td>
+                <td style="font-size: 0.85rem; opacity: 0.6;">
+                    {{ log.mtime.strftime('%Y-%m-%d %H:%M') }}
+                </td>
+                <td style="text-align: right;">
+                    <a href="{{ url_for('view_log', filename=log.name) }}" class="btn ghost btn-sm">Просмотр →</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% else %}
+<div class="card" style="text-align: center; padding: 4rem;">
+    <div style="font-size: 3rem; opacity: 0.2; margin-bottom: 1rem;">📝</div>
+    <p class="muted">Лог-файлы не обнаружены.</p>
+</div>
+{% endif %}
+
+<style>
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        background: rgba(255,255,255,0.02);
+        text-align: left;
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        border-bottom: 1px solid var(--card-border);
+    }
+    .data-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.01); }
+    
+    .btn.ghost {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--card-border);
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    .btn.ghost:hover {
+        border-color: var(--accent);
+        background: var(--accent-glow);
+    }
+</style>
+{% endblock %}

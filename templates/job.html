@@ -1,0 +1,136 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="job-header-container" style="margin: 2rem 0;">
+  <div id="status-row" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div>
+      <a href="{{ url_for('index') }}" class="back-link" style="text-decoration: none; font-weight: 600; font-size: 0.9rem; opacity: 0.6; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <span>←</span> Вернуться на главную
+      </a>
+      <h3>Сведения о задаче</h3>
+      <h1 id="job-title">Сессия {{ job.id }}</h1>
+    </div>
+    <div style="text-align: right;">
+        <span id="job-status-badge" class="status status-{{ job.status }}" style="font-size: 0.9rem; padding: 0.5rem 1.2rem;">
+            {{ job.status | job_status_label }}
+        </span>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="stat-grid-inline">
+        <div>
+            <div class="stat-label">Всего URL</div>
+            <div id="urls-total" class="stat-value" style="font-size: 1.5rem;">{{ job.urls|length }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Всего файлов</div>
+            <div id="files-total" class="stat-value" style="font-size: 1.5rem;">{{ job.get('files_total', 0) }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Скачано файлов</div>
+            <div id="files-completed" class="stat-value success" style="font-size: 1.5rem;">{{ job.get('files_completed', 0) }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Общий вес</div>
+            <div id="bytes-completed" class="stat-value primary" style="font-size: 1.5rem;">{{ (job.get('bytes_completed', 0) / (1024*1024)) | round(1) }} MB</div>
+        </div>
+    </div>
+
+    <div class="loading-row">
+      <div class="progress">
+        {% set percent = (job.files_completed / job.files_total * 100) if job.files_total > 0 else 0 %}
+        <div id="progress-bar" class="progress-bar" style="width: {{ percent }}%"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="progress-text">Выполнено: {{ percent | round(1) }}%</span>
+        <span id="spinner" class="spinner" style="display: {{ 'inline-block' if job.status == 'running' else 'none' }};"></span>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top: 3rem;">
+      <form method="post" action="{{ url_for('cancel_job', job_id=job.id) }}" style="display: {{ 'block' if job.status in ['running', 'queued'] else 'none' }}" id="cancel-form">
+        <button type="submit" class="btn btn-danger" style="background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);">
+            <span>Отменить загрузку</span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <div class="grid-bento">
+    <section class="card" style="margin-top: 0;">
+        <h3>Список URL</h3>
+        <div style="max-height: 400px; overflow-y: auto; margin-top: 1rem; padding-right: 1rem;">
+            <ul class="file-list-mono">
+                {% for url in job.urls %}
+                <li style="word-break: break-all; opacity: 0.8;">
+                    {{ url }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    {% if job.errors %}
+    <section class="card" style="margin-top: 0; border-color: rgba(239, 68, 68, 0.3);">
+        <h3 style="color: var(--error);">Ошибки</h3>
+        <ul class="list errors" style="margin-top: 1rem; padding: 0; list-style: none;">
+            {% for err in job.errors %}
+            <li style="background: rgba(239, 68, 68, 0.05); padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; font-size: 0.9rem; border-left: 3px solid var(--error);">
+                {{ err }}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+    function updateStatus() {
+        fetch('/api/jobs/{{ job.id }}')
+            .then(res => res.json())
+            .then(data => {
+                const statusBadge = document.getElementById('job-status-badge');
+                statusBadge.className = 'status status-' + data.status;
+                
+                // Перевод статуса (простой мэппинг для примера)
+                const labels = {
+                    'queued': 'В очереди',
+                    'running': 'Выполняется',
+                    'completed': 'Завершено',
+                    'failed': 'Ошибка',
+                    'cancelled': 'Отменено'
+                };
+                statusBadge.innerText = labels[data.status] || data.status;
+
+                document.getElementById('files-total').innerText = data.files_total;
+                document.getElementById('files-completed').innerText = data.files_completed;
+                document.getElementById('bytes-completed').innerText = (data.bytes_completed / (1024*1024)).toFixed(1) + ' MB';
+
+                const percent = data.files_total > 0 ? (data.files_completed / data.files_total * 100) : 0;
+                document.getElementById('progress-bar').style.width = percent + '%';
+                document.getElementById('progress-text').innerText = 'Выполнено: ' + percent.toFixed(1) + '%';
+                
+                const spinner = document.getElementById('spinner');
+                const cancelForm = document.getElementById('cancel-form');
+                
+                if (data.status === 'running') {
+                    spinner.style.display = 'inline-block';
+                    cancelForm.style.display = 'block';
+                } else {
+                    spinner.style.display = 'none';
+                    cancelForm.style.display = 'none';
+                }
+
+                if (data.status === 'running' || data.status === 'queued') {
+                    setTimeout(updateStatus, 2000);
+                }
+            });
+    }
+
+    {% if job.status in ['running', 'queued'] %}
+    setTimeout(updateStatus, 2000);
+    {% endif %}
+</script>
+{% endblock %}
