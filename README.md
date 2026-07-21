@@ -1,60 +1,60 @@
 # CRM Worksection Downloader v3.0
 
-Автоматизированная система выгрузки и систематизации файлов из задач CRM Worksection с поддержкой CLI, интерактивного терминального меню и веб-интерфейса (Flask UI).
+An automated system for downloading and organizing files from Worksection CRM tasks, featuring a CLI, an interactive terminal menu, and a Web UI (Flask).
 
 ---
 
-## 🌟 Основные возможности
+## 🌟 Key Features
 
-- **🌐 Flask Web UI**: Полнофункциональный веб-интерфейс для запуска загрузок, просмотра истории, управления настройками и наблюдения за логами в режиме реального времени.
-- **💻 CLI & Interactive Menu**: Интерактивное консольное меню (`menu.py`) и запуск через аргументы командной строки (`downloader.py`).
-- **⚡ Многопоточность & Параллелизм**: Высокоскоростная скачка файлов через `ThreadPoolExecutor` и одновременная обработка нескольких URL.
-- **🎯 Гибкая фильтрация файлов**: Фильтрация прикрепленных файлов по расширениям (`.jpg`, `.png`, `.pdf`, `.tif` и др.) и размерам.
-- **🔐 Детекция дубликатов & Повторные попытки**: Автоматическая проверка MD5 хэшей и экспоненциальная задержка при повторных попытках скачивания.
-- **🔔 Системные уведомления**: Звуковые оповещения и всплывающие системные уведомления (Toast) о завершении задач.
-- **📊 Логирование и статистика**: Подробное логирование всех операций и сохранение истории загрузок.
+- **🌐 Flask Web UI**: A fully-featured web interface to start downloads, view history, manage settings, and monitor logs in real-time.
+- **💻 CLI & Interactive Menu**: Interactive console menu (`menu.py`) and command-line execution (`downloader.py`).
+- **⚡ Multithreading & Parallelism**: High-speed file downloading via `ThreadPoolExecutor` and concurrent processing of multiple URLs.
+- **🎯 Flexible File Filtering**: Filter attachments by extension (`.jpg`, `.png`, `.pdf`, `.tif`, etc.) and size.
+- **🔐 Duplicate Detection & Retries**: Automatic MD5 hash verification to skip duplicates, and exponential backoff for download retries.
+- **🔔 System Notifications**: Audio alerts and system toast notifications upon task completion.
+- **📊 Logging & Statistics**: Detailed logging of all operations and persistent download history.
 
 ---
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 Download_Work/
-├── downloader.py          # Основной движок загрузки файлов
-├── menu.py                # Интерактивное консольное меню
-├── web_app.py             # Flask Web UI сервер
-├── config.example.json    # Шаблон конфигурационного файла
-├── requirements.txt       # Зависимости Python
-├── pytest.ini             # Конфигурация Pytest
-├── templates/             # HTML шаблоны Web UI
-├── static/                # CSS и JS ресурсы Web UI
-├── tests/                 # 100+ юнит- и интеграционных тестов
-├── docs/                  # Техническая документация
-├── start.bat              # Скрипт запуска CLI меню
-└── start_web.bat          # Скрипт запуска Web UI
+├── downloader.py          # Core file downloading engine
+├── menu.py                # Interactive console menu
+├── web_app.py             # Flask Web UI server
+├── config.example.json    # Configuration file template
+├── requirements.txt       # Python dependencies
+├── pytest.ini             # Pytest configuration
+├── templates/             # Web UI HTML templates
+├── static/                # Web UI CSS and JS resources
+├── tests/                 # 100+ unit and integration tests
+├── docs/                  # Technical documentation
+├── start.bat              # Script to launch the CLI menu
+└── start_web.bat          # Script to launch the Web UI
 ```
 
 ---
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### 1. Установка зависимостей
+### 1. Install Dependencies
 
-Убедитесь, что установлен Python 3.8+:
+Ensure Python 3.8+ is installed:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Настройка конфигурации
+### 2. Configuration
 
-Создайте файл `config.json` на основе `config.example.json`:
+Create a `config.json` file based on `config.example.json`:
 
 ```bash
 cp config.example.json config.json
 ```
 
-Укажите вашу куку авторизации Worksection в параметре `my_cookie`:
+Specify your Worksection authorization cookie in the `my_cookie` parameter:
 
 ```json
 {
@@ -69,45 +69,45 @@ cp config.example.json config.json
 
 ---
 
-## 💻 Использование
+## 💻 Usage
 
-### 🌐 Вариант 1: Web UI (Веб-интерфейс)
+### 🌐 Option 1: Web UI
 
-Запустите веб-сервер:
+Start the web server:
 ```bash
 python web_app.py
 ```
-или выполните `start_web.bat`.
+Or execute `start_web.bat`.
 
-Откройте в браузере: `http://127.0.0.1:5000`
+Open in your browser: `http://127.0.0.1:5000`
 
-### 📋 Вариант 2: Интерактивное консольное меню
+### 📋 Option 2: Interactive Console Menu
 
-Запустите меню:
+Start the menu:
 ```bash
 python menu.py
 ```
-или выполните `start.bat`.
+Or execute `start.bat`.
 
-### ⚡ Вариант 3: Командная строка (CLI)
+### ⚡ Option 3: Command Line Interface (CLI)
 
-Скачивание файлов по отдельному URL:
+Download files from a single URL:
 ```bash
 python downloader.py --url "https://zolotoyvek.worksection.com/project/123/456/"
 ```
 
-Пакетная скачка из файла со списком URL:
+Batch download from a URL list file:
 ```bash
 python downloader.py --batch-file urls.txt
 ```
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-Проект полностью покрыт автотестами (100+ тестов).
+The project is fully covered by automated tests (100+ tests).
 
-Для запуска полного набора тестов выполните:
+To run the complete test suite, execute:
 
 ```bash
 pytest
@@ -115,6 +115,6 @@ pytest
 
 ---
 
-## 📄 Лицензия
+## 📄 License
 
 MIT License
